@@ -1,0 +1,23 @@
+# ---- Python ----
+__pycache__/
+*.py[cod]
+
+# ---- Virtual environments ----
+venv/
+.venv/
+
+# ---- IDE ----
+.vscode/
+.idea/
+
+# ---- OS ----
+Thumbs.db
+.DS_Store
+
+# ---- Cache / logs ----
+*.log
+
+# ---- Project outputs ----
+results/*.csv
+results/*.json
+!results/.gitkeep
