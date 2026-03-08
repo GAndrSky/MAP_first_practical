@@ -16,6 +16,7 @@ from typing import List, Optional, Dict, Any
 
 from game.state import GameState, make_initial_state
 from game.rules import generate_sequence, apply_move, is_terminal, get_winner, MOVE_LEFT, MOVE_RIGHT
+from ai.dispatcher import get_best_ai_move
 
 
 # ── Statistics dataclasses ─────────────────────────────────────────────────────
@@ -236,7 +237,7 @@ class BatchRunner:
 
             # Get the AI's chosen move
             t_start = time.perf_counter()
-            move, move_stats = self._ai_move(state, cfg)
+            move, move_stats = get_best_ai_move(state, cfg)
             t_end = time.perf_counter()
             move_stats.time_s = t_end - t_start
 
@@ -268,14 +269,4 @@ class BatchRunner:
         record.total_time_s = time.perf_counter() - t_game_start
         return record
 
-    def _ai_move(self, state: GameState, cfg: PlayerConfig):
-        """Dispatch to the correct AI algorithm."""
-        if cfg.kind == "minimax":
-            from ai.minimax import get_best_move_minimax
-            move, _, stats = get_best_move_minimax(state, cfg.depth, cfg.player_id)
-        elif cfg.kind == "alphabeta":
-            from ai.alphabeta import get_best_move_alphabeta
-            move, _, stats = get_best_move_alphabeta(state, cfg.depth, cfg.player_id)
-        else:
-            raise ValueError(f"Unknown AI kind '{cfg.kind}' in batch runner.")
-        return move, stats
+
