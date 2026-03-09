@@ -42,6 +42,10 @@ from game.state import GameState
 from ai.heuristic import evaluate, terminal_score
 
 
+# ── Transposition table (cache) ───────────────────────────────────────────────
+CACHE = {}
+
+
 def alphabeta(
     node: GameTreeNode,
     depth: int,
@@ -78,18 +82,26 @@ def alphabeta(
     """
     state = node.state
 
+    # ── Cache lookup ──────────────────────────────────────────────────────────
+    key = (state, depth, maximizing)
+    if key in CACHE:
+        stats.nodes_evaluated += 1
+        return CACHE[key]
+
     # ── Base cases ─────────────────────────────────────────────────────────────
     if is_terminal(state):
         stats.nodes_evaluated += 1
         winner = get_winner(state)
         value = terminal_score(winner, player_id)
         node.value = value
+        CACHE[key] = value
         return value
 
     if depth == 0:
         stats.nodes_evaluated += 1
         value = evaluate(state, player_id)
         node.value = value
+        CACHE[key] = value
         return value
 
     # ── Recursive step ─────────────────────────────────────────────────────────
@@ -114,6 +126,7 @@ def alphabeta(
                 # β-cutoff: the minimizer won't allow us to reach this branch
                 break
         node.value = value
+        CACHE[key] = value
         return value
     else:
         value = math.inf
@@ -133,6 +146,7 @@ def alphabeta(
                 # α-cutoff: the maximizer already has a better option elsewhere
                 break
         node.value = value
+        CACHE[key] = value
         return value
 
 

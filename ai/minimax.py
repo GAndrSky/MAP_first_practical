@@ -38,6 +38,10 @@ from game.state import GameState
 from ai.heuristic import evaluate, terminal_score
 
 
+# ── Transposition table (cache) ───────────────────────────────────────────────
+CACHE = {}
+
+
 def minimax(
     node: GameTreeNode,
     depth: int,
@@ -69,18 +73,26 @@ def minimax(
     """
     state = node.state
 
+    # ── Cache lookup ──────────────────────────────────────────────────────────
+    key = (state, depth, maximizing)
+    if key in CACHE:
+        stats.nodes_evaluated += 1
+        return CACHE[key]
+
     # ── Base cases ─────────────────────────────────────────────────────────────
     if is_terminal(state):
         stats.nodes_evaluated += 1
         winner = get_winner(state)
         value = terminal_score(winner, player_id)
         node.value = value
+        CACHE[key] = value
         return value
 
     if depth == 0:
         stats.nodes_evaluated += 1
         value = evaluate(state, player_id)
         node.value = value
+        CACHE[key] = value
         return value
 
     # ── Recursive step ─────────────────────────────────────────────────────────
@@ -101,6 +113,7 @@ def minimax(
             if child_value > best_value:
                 best_value = child_value
         node.value = best_value
+        CACHE[key] = best_value
         return best_value
     else:
         best_value = math.inf
@@ -115,6 +128,7 @@ def minimax(
             if child_value < best_value:
                 best_value = child_value
         node.value = best_value
+        CACHE[key] = best_value
         return best_value
 
 
