@@ -55,19 +55,19 @@ class GameState:
         )
 
     # ── Helpers ───────────────────────────────────────────────────────────────
-    @property
-    def current_player_points(self) -> int:
-        """Points of the player whose turn it currently is."""
-        return self.p1_points if self.turn == 1 else self.p2_points
+    # @property
+    # def current_player_points(self) -> int:
+    #     """Points of the player whose turn it currently is."""
+    #     return self.p1_points if self.turn == 1 else self.p2_points
 
-    @property
-    def opponent_points(self) -> int:
-        """Points of the player who is NOT currently moving."""
-        return self.p2_points if self.turn == 1 else self.p1_points
+    # @property
+    # def opponent_points(self) -> int:
+    #     """Points of the player who is NOT currently moving."""
+    #     return self.p2_points if self.turn == 1 else self.p1_points
 
-    def points_of(self, player_id: int) -> int:
-        """Return points for the given player (1 or 2)."""
-        return self.p1_points if player_id == 1 else self.p2_points
+    # def points_of(self, player_id: int) -> int:
+    #     """Return points for the given player (1 or 2)."""
+    #     return self.p1_points if player_id == 1 else self.p2_points
 
     def __repr__(self) -> str:
         return (

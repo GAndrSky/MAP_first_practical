@@ -15,6 +15,7 @@ import time
 
 from game.state import GameState, make_initial_state
 from game.rules import apply_move, is_terminal, get_winner, MOVE_LEFT, MOVE_RIGHT
+from ai.dispatcher import get_best_ai_move
 from experiments.runner import MoveStats, MoveRecord, GameRecord, PlayerConfig
 
 
@@ -232,14 +233,7 @@ class GameFrame(tk.Frame):
         cfg = self._p1_config if current == 1 else self._p2_config
 
         t_start = time.perf_counter()
-        if cfg.kind == "minimax":
-            from ai.minimax import get_best_move_minimax
-            move, _, stats = get_best_move_minimax(self._state, cfg.depth, current)
-        elif cfg.kind == "alphabeta":
-            from ai.alphabeta import get_best_move_alphabeta
-            move, _, stats = get_best_move_alphabeta(self._state, cfg.depth, current)
-        else:
-            raise ValueError(f"Unknown AI kind: {cfg.kind!r}")
+        move, stats = get_best_ai_move(self._state, cfg)
         elapsed = time.perf_counter() - t_start
 
         self._apply_and_record(
