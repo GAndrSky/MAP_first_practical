@@ -308,8 +308,5 @@ class GameFrame(tk.Frame):
         self._log_text.delete("1.0", tk.END)
         self._log_text.config(state=tk.DISABLED)
 
-    def get_game_record(self) -> GameRecord:
-        return self._game_record
-
     def _back(self):
         self._on_back()

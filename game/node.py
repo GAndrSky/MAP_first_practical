@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import List, Optional
 
 from game.state import GameState
-from game.rules import apply_move, get_legal_moves, is_terminal
+from game.rules import apply_move, get_legal_moves
 
 
 class GameTreeNode:
@@ -43,24 +43,6 @@ class GameTreeNode:
                 nodes_generated_counter[0] += 1
 
         return self.children
-
-    def is_terminal(self) -> bool:
-        return is_terminal(self.state)
-
-    def best_child(self, maximizing: bool) -> Optional["GameTreeNode"]:
-        if not self.children:
-            return None
-
-        if maximizing:
-            return max(
-                self.children,
-                key=lambda c: c.value if c.value is not None else float("-inf"),
-            )
-
-        return min(
-            self.children,
-            key=lambda c: c.value if c.value is not None else float("inf"),
-        )
 
     def __repr__(self) -> str:
         return (
