@@ -1,9 +1,10 @@
-from typing import List, Tuple, Optional
+from typing import List, Tuple
+
 from game.state import GameState
 
-MOVE_LEFT  = "LEFT"   
-MOVE_RIGHT = "RIGHT"   
-ALL_MOVES  = [MOVE_LEFT, MOVE_RIGHT]
+MOVE_LEFT = "LEFT"
+MOVE_RIGHT = "RIGHT"
+ALL_MOVES = [MOVE_LEFT, MOVE_RIGHT]
 
 def get_legal_moves(state: GameState) -> List[str]:
     if len(state.sequence) == 0:
@@ -19,10 +20,10 @@ def apply_move(state: GameState, move: str) -> GameState:
 
     if move == MOVE_LEFT:
         taken_value = state.sequence[0]
-        new_sequence = state.sequence[1:]  
-    else:  
+        new_sequence = state.sequence[1:]
+    else:
         taken_value = state.sequence[-1]
-        new_sequence = state.sequence[:-1] 
+        new_sequence = state.sequence[:-1]
 
     if state.turn == 1:
         new_p1 = state.p1_points - taken_value

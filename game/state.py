@@ -1,10 +1,10 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Tuple
 
-INITIAL_POINTS: int = 80        
-MIN_N: int = 15                 
-MAX_N: int = 25                 
-VALID_VALUES = frozenset({1, 2, 3})  
+INITIAL_POINTS: int = 80
+MIN_N: int = 15
+MAX_N: int = 25
+VALID_VALUES = frozenset({1, 2, 3})
 
 
 @dataclass(frozen=True)

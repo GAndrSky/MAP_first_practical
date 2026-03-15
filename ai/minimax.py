@@ -1,13 +1,13 @@
 from __future__ import annotations
+
 import math
-from typing import Tuple, Optional
+from typing import Optional, Tuple
 
-from game.node import GameTreeNode
-from game.rules import get_legal_moves, apply_move, is_terminal, get_winner
-from game.state import GameState
 from ai.heuristic import evaluate, terminal_score
+from game.node import GameTreeNode
+from game.rules import get_winner, is_terminal
+from game.state import GameState
 
-CACHE = {}
 
 def minimax(
     node: GameTreeNode,
@@ -16,27 +16,19 @@ def minimax(
     player_id: int,
     stats: "MoveStats",
 ) -> float:
-    
     state = node.state
-
-    key = (state, depth, maximizing)
-    if key in CACHE:
-        stats.nodes_evaluated += 1
-        return CACHE[key]
 
     if is_terminal(state):
         stats.nodes_evaluated += 1
         winner = get_winner(state)
         value = terminal_score(winner, player_id)
         node.value = value
-        CACHE[key] = value
         return value
 
     if depth == 0:
         stats.nodes_evaluated += 1
         value = evaluate(state, player_id)
         node.value = value
-        CACHE[key] = value
         return value
 
     node.expand(nodes_generated_counter=None)
@@ -55,7 +47,6 @@ def minimax(
             if child_value > best_value:
                 best_value = child_value
         node.value = best_value
-        CACHE[key] = best_value
         return best_value
     else:
         best_value = math.inf
@@ -63,22 +54,21 @@ def minimax(
             child_value = minimax(
                 child,
                 depth - 1,
-                True,         
+                True,
                 player_id,
                 stats,
             )
             if child_value < best_value:
                 best_value = child_value
         node.value = best_value
-        CACHE[key] = best_value
         return best_value
+
 
 def get_best_move_minimax(
     state: GameState,
     depth: int,
     player_id: int,
 ) -> Tuple[str, float, "MoveStats"]:
-    
     from experiments.runner import MoveStats
 
     assert depth >= 1, "Search depth must be at least 1."
@@ -90,8 +80,6 @@ def get_best_move_minimax(
     root = GameTreeNode(state=state, move=None, parent=None, depth=0)
     stats = MoveStats()
 
-    maximizing_at_root = True  
-
     root.expand(nodes_generated_counter=None)
     stats.nodes_generated += len(root.children)
 
@@ -102,7 +90,7 @@ def get_best_move_minimax(
         child_value = minimax(
             child,
             depth - 1,
-            False, 
+            False,
             player_id,
             stats,
         )

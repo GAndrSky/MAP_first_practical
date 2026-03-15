@@ -1,12 +1,10 @@
 from __future__ import annotations
 
-import math
 from typing import Tuple
 
+from ai.search_core import get_best_move, search_value
 from game.node import GameTreeNode
 from game.state import GameState
-
-from ai.search_core import search_value, get_best_move
 
 
 def alphabeta(

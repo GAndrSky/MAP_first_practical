@@ -1,11 +1,9 @@
 from __future__ import annotations
-from typing import List, Optional, TYPE_CHECKING
+
+from typing import List, Optional
 
 from game.state import GameState
-from game.rules import get_legal_moves, apply_move
-
-if TYPE_CHECKING:
-    from experiments.runner import MoveStats
+from game.rules import apply_move, get_legal_moves, is_terminal
 
 
 class GameTreeNode:
@@ -18,12 +16,12 @@ class GameTreeNode:
         parent: Optional["GameTreeNode"] = None,
         depth: int = 0,
     ) -> None:
-        self.state:    GameState            = state
-        self.move:     Optional[str]        = move
-        self.parent:   Optional[GameTreeNode] = parent
-        self.children: List[GameTreeNode]   = []
-        self.value:    Optional[float]      = None
-        self.depth:    int                  = depth
+        self.state: GameState = state
+        self.move: Optional[str] = move
+        self.parent: Optional["GameTreeNode"] = parent
+        self.children: List["GameTreeNode"] = []
+        self.value: Optional[float] = None
+        self.depth: int = depth
 
     def expand(self, nodes_generated_counter: Optional[list] = None) -> List["GameTreeNode"]:
         if self.children:
@@ -32,32 +30,37 @@ class GameTreeNode:
         legal_moves = get_legal_moves(self.state)
         for move in legal_moves:
             child_state = apply_move(self.state, move)
-            child = GameTreeNode(
-                state=child_state,
-                move=move,
-                parent=self,
-                depth=self.depth + 1,
+            self.children.append(
+                GameTreeNode(
+                    state=child_state,
+                    move=move,
+                    parent=self,
+                    depth=self.depth + 1,
+                )
             )
-            self.children.append(child)
 
             if nodes_generated_counter is not None:
                 nodes_generated_counter[0] += 1
 
         return self.children
 
-
     def is_terminal(self) -> bool:
-        from game.rules import is_terminal
         return is_terminal(self.state)
 
     def best_child(self, maximizing: bool) -> Optional["GameTreeNode"]:
         if not self.children:
             return None
-        key = (lambda c: c.value) if c.value is not None else (lambda _: 0)
+
         if maximizing:
-            return max(self.children, key=lambda c: c.value if c.value is not None else float('-inf'))
-        else:
-            return min(self.children, key=lambda c: c.value if c.value is not None else float('inf'))
+            return max(
+                self.children,
+                key=lambda c: c.value if c.value is not None else float("-inf"),
+            )
+
+        return min(
+            self.children,
+            key=lambda c: c.value if c.value is not None else float("inf"),
+        )
 
     def __repr__(self) -> str:
         return (
