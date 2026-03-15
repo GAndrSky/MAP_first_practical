@@ -1,13 +1,3 @@
-"""
-gui/setup_frame.py
-==================
-Setup screen: N input, starting player, algorithm selection, depth slider,
-and mode toggle (Human vs AI  vs  AI vs AI).
-
-The SetupFrame collects all game configuration from the user and calls
-on_start(config_dict) when the user clicks "Start Game".
-"""
-
 import tkinter as tk
 from tkinter import ttk, messagebox
 from game.rules import generate_sequence
@@ -15,34 +5,20 @@ from game.state import MIN_N, MAX_N
 
 
 class SetupFrame(tk.Frame):
-    """
-    Configuration panel shown before each game.
-
-    Callbacks
-    ---------
-    on_start : callable
-        Called with a dict containing game configuration when "Start Game"
-        is pressed and all inputs are valid.
-    """
-
     def __init__(self, parent, on_start, **kwargs):
         super().__init__(parent, **kwargs)
         self._on_start = on_start
-        self._sequence = None  # cached generated sequence
+        self._sequence = None
         self._build_ui()
-
-    # ── UI construction ────────────────────────────────────────────────────────
 
     def _build_ui(self):
         self.configure(bg="#1e1e2e", padx=20, pady=20)
 
-        # Title
         tk.Label(
             self, text="Number Sequence Game  •  AI Project",
             font=("Segoe UI", 16, "bold"), fg="#cdd6f4", bg="#1e1e2e"
         ).grid(row=0, column=0, columnspan=4, pady=(0, 18))
 
-        # ── Mode toggle ────────────────────────────────────────────────────────
         self._mode_var = tk.StringVar(value="human_vs_ai")
 
         mode_frame = tk.LabelFrame(
@@ -63,7 +39,6 @@ class SetupFrame(tk.Frame):
                 font=("Segoe UI", 10),
             ).pack(side=tk.LEFT, padx=18, pady=6)
 
-        # ── Sequence config ────────────────────────────────────────────────────
         seq_frame = tk.LabelFrame(
             self, text=" Sequence ", fg="#89b4fa", bg="#1e1e2e",
             font=("Segoe UI", 10, "bold"), bd=1, relief=tk.GROOVE
@@ -94,19 +69,16 @@ class SetupFrame(tk.Frame):
         )
         self._seq_label.grid(row=1, column=0, columnspan=4, padx=10, pady=(0, 8))
 
-        # ── Player 1 config ────────────────────────────────────────────────────
         self._p1_frame = self._build_player_frame(
             row=3, label="Player 1 (you)", is_human_mode=True,
             algo_default="minimax", depth_default=5,
         )
 
-        # ── Player 2 config (AI) ───────────────────────────────────────────────
         self._p2_frame = self._build_player_frame(
             row=4, label="Player 2 (AI)", is_human_mode=False,
             algo_default="alphabeta", depth_default=5,
         )
 
-        # ── Starting player (Human vs AI only) ────────────────────────────────
         self._start_player_frame = tk.LabelFrame(
             self, text=" Who Goes First? ", fg="#89b4fa", bg="#1e1e2e",
             font=("Segoe UI", 10, "bold"), bd=1, relief=tk.GROOVE
@@ -124,7 +96,6 @@ class SetupFrame(tk.Frame):
                 font=("Segoe UI", 10),
             ).pack(side=tk.LEFT, padx=18, pady=6)
 
-        # ── Start button ───────────────────────────────────────────────────────
         tk.Button(
             self, text="▶   Start Game", command=self._start_game,
             bg="#a6e3a1", fg="#1e1e2e", activebackground="#94e2d5",
@@ -134,7 +105,6 @@ class SetupFrame(tk.Frame):
         self._on_mode_change()
 
     def _build_player_frame(self, row, label, is_human_mode, algo_default, depth_default):
-        """Build a player config sub-frame and return references to its widgets."""
         frame = tk.LabelFrame(
             self, text=f" {label} ", fg="#89b4fa", bg="#1e1e2e",
             font=("Segoe UI", 10, "bold"), bd=1, relief=tk.GROOVE,
@@ -144,14 +114,12 @@ class SetupFrame(tk.Frame):
         data = {}
 
         if is_human_mode:
-            # In human_vs_ai mode, P1 is human — show a label instead of algo selector
             data["kind_label"] = tk.Label(
                 frame, text="Human (you)", fg="#cdd6f4", bg="#1e1e2e",
                 font=("Segoe UI", 10, "italic"),
             )
             data["kind_label"].grid(row=0, column=0, columnspan=4, pady=8)
         else:
-            # Algorithm selector
             tk.Label(frame, text="Algorithm:", fg="#cdd6f4",
                      bg="#1e1e2e", font=("Segoe UI", 10)).grid(row=0, column=0, padx=10, pady=8)
 
@@ -164,7 +132,6 @@ class SetupFrame(tk.Frame):
                     font=("Segoe UI", 10),
                 ).grid(row=0, column=i + 1, padx=10, pady=8)
 
-        # Depth slider (always shown for AI frames)
         if not is_human_mode or True:
             tk.Label(frame, text="Depth:", fg="#cdd6f4",
                      bg="#1e1e2e", font=("Segoe UI", 10)).grid(row=1, column=0, padx=10, pady=4)
@@ -182,15 +149,10 @@ class SetupFrame(tk.Frame):
         frame._data = data
         return frame
 
-    # ── Event handlers ─────────────────────────────────────────────────────────
-
     def _on_mode_change(self):
-        """Reconfigure visible widgets based on selected mode."""
         mode = self._mode_var.get()
         if mode == "human_vs_ai":
-            # Show "who goes first?" frame
             self._start_player_frame.grid()
-            # P1 frame shows "Human"
             for widget in self._p1_frame.winfo_children():
                 widget.destroy()
             self._p1_frame.configure(text=" Player 1 (Human — you) ")
@@ -199,13 +161,11 @@ class SetupFrame(tk.Frame):
                 bg="#1e1e2e", font=("Segoe UI", 10, "italic"),
             ).pack(pady=10)
         else:
-            # AI vs AI: P1 gets algorithm selector too
             self._start_player_frame.grid_remove()
             for widget in self._p1_frame.winfo_children():
                 widget.destroy()
             self._p1_frame.configure(text=" Player 1 (AI) ")
             self._p1_frame._data = {}
-            # Rebuild P1 as full AI frame
             d = self._p1_frame._data
             tk.Label(self._p1_frame, text="Algorithm:", fg="#cdd6f4",
                      bg="#1e1e2e", font=("Segoe UI", 10)).grid(row=0, column=0, padx=10, pady=8)
@@ -228,7 +188,6 @@ class SetupFrame(tk.Frame):
             ).grid(row=1, column=1, columnspan=3, padx=6, pady=4, sticky="w")
 
     def _generate_sequence(self):
-        """Generate a random sequence and display it."""
         try:
             n = self._n_var.get()
         except tk.TclError:
@@ -246,7 +205,6 @@ class SetupFrame(tk.Frame):
         self._seq_label.config(text="  ".join(str(v) for v in self._sequence))
 
     def _start_game(self):
-        """Validate inputs and call on_start with the collected configuration."""
         if self._sequence is None:
             messagebox.showwarning("No Sequence", "Please generate a sequence first.")
             return
@@ -265,7 +223,7 @@ class SetupFrame(tk.Frame):
                 "p2_kind":        p2_data["algo_var"].get(),
                 "p2_depth":       p2_data["depth_var"].get(),
             }
-        else:  # ai_vs_ai
+        else:
             p1_data = self._p1_frame._data
             p2_data = self._p2_frame._data
             config = {

@@ -1,10 +1,3 @@
-"""
-gui/experiment_frame.py
-=======================
-Batch experiment tab: configure K games, algorithms, depth per player,
-run in a background thread, display results, and export CSV/JSON.
-"""
-
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 import threading
@@ -13,8 +6,6 @@ from game.state import MIN_N, MAX_N
 from experiments.runner import BatchRunner, PlayerConfig
 from experiments.logger import GameLogger
 
-
-# ── Colour palette ─────────────────────────────────────────────────────────────
 BG      = "#1e1e2e"
 SURFACE = "#313244"
 OVERLAY = "#45475a"
@@ -27,8 +18,6 @@ SUBTEXT = "#a6adc8"
 
 
 class ExperimentFrame(tk.Frame):
-    """Batch experiment runner UI."""
-
     def __init__(self, parent, **kwargs):
         super().__init__(parent, bg=BG, **kwargs)
         self._records = []
@@ -36,19 +25,15 @@ class ExperimentFrame(tk.Frame):
         self._last_p2 = None
         self._build_ui()
 
-    # ── UI construction ────────────────────────────────────────────────────────
-
     def _build_ui(self):
         tk.Label(
             self, text="Batch Experiment Runner",
             font=("Segoe UI", 14, "bold"), fg=TEXT, bg=BG,
         ).pack(pady=(16, 10))
 
-        # ── Config panel ───────────────────────────────────────────────────────
         cfg_frame = tk.Frame(self, bg=SURFACE, padx=16, pady=12)
         cfg_frame.pack(fill=tk.X, padx=20, pady=(0, 12))
 
-        # Row 0: K and N
         tk.Label(cfg_frame, text="Games (K):", fg=TEXT, bg=SURFACE,
                  font=("Segoe UI", 10)).grid(row=0, column=0, sticky=tk.W, pady=6)
         self._k_var = tk.IntVar(value=10)
@@ -72,16 +57,13 @@ class ExperimentFrame(tk.Frame):
                  font=("Segoe UI", 10), bg=OVERLAY, fg=TEXT,
                  insertbackground=TEXT).grid(row=0, column=5, padx=8, pady=6)
 
-        # Row 1: P1 config
         self._p1_algo_var, self._p1_depth_var = self._add_player_row(
             cfg_frame, row=1, label="Player 1:", default_algo="minimax", default_depth=5
         )
-        # Row 2: P2 config
         self._p2_algo_var, self._p2_depth_var = self._add_player_row(
             cfg_frame, row=2, label="Player 2:", default_algo="alphabeta", default_depth=5
         )
 
-        # ── Run button + progress ──────────────────────────────────────────────
         btn_row = tk.Frame(self, bg=BG)
         btn_row.pack(fill=tk.X, padx=20, pady=(0, 8))
 
@@ -97,7 +79,6 @@ class ExperimentFrame(tk.Frame):
         tk.Label(btn_row, textvariable=self._progress_var,
                  fg=YELLOW, bg=BG, font=("Segoe UI", 9)).pack(side=tk.LEFT, padx=16)
 
-        # ── Export buttons ─────────────────────────────────────────────────────
         export_row = tk.Frame(self, bg=BG)
         export_row.pack(fill=tk.X, padx=20, pady=(0, 8))
 
@@ -115,7 +96,6 @@ class ExperimentFrame(tk.Frame):
             font=("Segoe UI", 10), relief=tk.FLAT, padx=12, pady=4,
         ).pack(side=tk.LEFT)
 
-        # ── Results text area ──────────────────────────────────────────────────
         tk.Label(self, text="Results:", fg=SUBTEXT, bg=BG,
                  font=("Segoe UI", 9, "bold")).pack(anchor=tk.W, padx=20)
 
@@ -135,7 +115,6 @@ class ExperimentFrame(tk.Frame):
         scrollbar.config(command=self._result_text.yview)
 
     def _add_player_row(self, parent, row, label, default_algo, default_depth):
-        """Add an algorithm + depth row for one player. Returns (algo_var, depth_var)."""
         tk.Label(parent, text=label, fg=TEXT, bg=SURFACE,
                  font=("Segoe UI", 10, "bold")).grid(row=row, column=0, sticky=tk.W, pady=6)
 
@@ -160,10 +139,7 @@ class ExperimentFrame(tk.Frame):
 
         return algo_var, depth_var
 
-    # ── Actions ────────────────────────────────────────────────────────────────
-
     def _run_experiments(self):
-        """Validate inputs and launch batch run in a background thread."""
         try:
             K = self._k_var.get()
             n = self._n_var.get()
@@ -199,17 +175,14 @@ class ExperimentFrame(tk.Frame):
                 progress_callback=self._on_progress,
             )
             self._records = records
-            # Update UI in main thread
             self.after(0, lambda: self._on_done(batch_stats, p1_cfg, p2_cfg))
 
         threading.Thread(target=task, daemon=True).start()
 
     def _on_progress(self, done: int, total: int):
-        """Called from background thread — schedule UI update via after()."""
         self.after(0, lambda: self._progress_var.set(f"  {done}/{total} games completed…"))
 
     def _on_done(self, batch_stats, p1_cfg, p2_cfg):
-        """Called in main thread when all games finish."""
         self._progress_var.set(f"  Done!")
         self._run_btn.config(state=tk.NORMAL)
         summary = batch_stats.summary_str(p1_cfg, p2_cfg)
@@ -220,8 +193,6 @@ class ExperimentFrame(tk.Frame):
         self._result_text.insert(tk.END, text)
         self._result_text.see(tk.END)
         self._result_text.config(state=tk.DISABLED)
-
-    # ── Export ─────────────────────────────────────────────────────────────────
 
     def _export_csv(self):
         if not self._records:

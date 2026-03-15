@@ -1,9 +1,3 @@
-"""
-ai/alphabeta.py
-===============
-Thin Alpha-Beta wrapper over shared search core.
-"""
-
 from __future__ import annotations
 
 import math
@@ -24,7 +18,6 @@ def alphabeta(
     player_id: int,
     stats: "MoveStats",
 ) -> float:
-    """Depth-limited Alpha-Beta value for a node."""
     return search_value(
         node=node,
         depth=depth,
@@ -42,7 +35,6 @@ def get_best_move_alphabeta(
     depth: int,
     player_id: int,
 ) -> Tuple[str, float, "MoveStats"]:
-    """Return (best_move, value, stats) using Alpha-Beta pruning."""
     from experiments.runner import MoveStats
 
     stats = MoveStats()

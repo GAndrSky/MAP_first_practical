@@ -1,14 +1,3 @@
-"""
-gui/game_frame.py
-=================
-Live game view: sequence display, scoreboard, move buttons, and status.
-
-Handles both Human vs AI and AI vs AI modes.
-
-Human moves: LEFT / RIGHT buttons (or click the first/last sequence tile).
-AI moves: triggered automatically via after() so the GUI remains responsive.
-"""
-
 import tkinter as tk
 from tkinter import messagebox
 import time
@@ -18,8 +7,6 @@ from game.rules import apply_move, is_terminal, get_winner, MOVE_LEFT, MOVE_RIGH
 from ai.dispatcher import get_best_ai_move
 from experiments.runner import MoveStats, MoveRecord, GameRecord, PlayerConfig
 
-
-# ── Colour palette (Catppuccin Mocha) ─────────────────────────────────────────
 BG       = "#1e1e2e"
 SURFACE  = "#313244"
 OVERLAY  = "#45475a"
@@ -33,21 +20,11 @@ TEAL     = "#94e2d5"
 
 
 class GameFrame(tk.Frame):
-    """
-    Main game screen displayed while a game is in progress.
-
-    Parameters
-    ----------
-    parent : tk.Widget
-    on_back : callable
-        Called when the user clicks "Back to Setup".
-    """
-
     def __init__(self, parent, on_back, **kwargs):
         super().__init__(parent, bg=BG, **kwargs)
         self._on_back = on_back
         self._state: GameState = None
-        self._mode: str = None         # "human_vs_ai" | "ai_vs_ai"
+        self._mode: str = None         
         self._p1_config: PlayerConfig = None
         self._p2_config: PlayerConfig = None
         self._game_record: GameRecord = None
@@ -55,10 +32,7 @@ class GameFrame(tk.Frame):
         self._game_over: bool = False
         self._build_ui()
 
-    # ── UI construction ────────────────────────────────────────────────────────
-
     def _build_ui(self):
-        # ── Header row ─────────────────────────────────────────────────────────
         header = tk.Frame(self, bg=BG)
         header.pack(fill=tk.X, padx=20, pady=(16, 4))
 
@@ -73,7 +47,6 @@ class GameFrame(tk.Frame):
             font=("Segoe UI", 14, "bold"), fg=TEXT, bg=BG,
         ).pack(side=tk.LEFT, padx=16)
 
-        # ── Scoreboard ─────────────────────────────────────────────────────────
         score_frame = tk.Frame(self, bg=SURFACE, pady=10)
         score_frame.pack(fill=tk.X, padx=20, pady=6)
 
@@ -95,14 +68,12 @@ class GameFrame(tk.Frame):
         )
         self._p2_label.pack(side=tk.LEFT, expand=True)
 
-        # ── Status bar ─────────────────────────────────────────────────────────
         self._status_label = tk.Label(
             self, text="", font=("Segoe UI", 10, "italic"),
             fg=GREEN, bg=BG,
         )
         self._status_label.pack(pady=(4, 2))
 
-        # ── Sequence display ────────────────────────────────────────────────────
         seq_outer = tk.Frame(self, bg=BG)
         seq_outer.pack(fill=tk.X, padx=20, pady=8)
 
@@ -114,7 +85,6 @@ class GameFrame(tk.Frame):
         self._seq_frame = tk.Frame(seq_outer, bg=BG)
         self._seq_frame.pack(fill=tk.X)
 
-        # ── Move buttons (Human only) ───────────────────────────────────────────
         self._btn_frame = tk.Frame(self, bg=BG)
         self._btn_frame.pack(pady=12)
 
@@ -136,7 +106,6 @@ class GameFrame(tk.Frame):
         )
         self._right_btn.pack(side=tk.LEFT, padx=12)
 
-        # ── Move history log ────────────────────────────────────────────────────
         log_outer = tk.Frame(self, bg=BG)
         log_outer.pack(fill=tk.BOTH, expand=True, padx=20, pady=(8, 4))
 
@@ -157,15 +126,7 @@ class GameFrame(tk.Frame):
         self._log_text.pack(fill=tk.BOTH, expand=True)
         log_scroll.config(command=self._log_text.yview)
 
-    # ── Game lifecycle ─────────────────────────────────────────────────────────
-
     def start_game(self, config: dict):
-        """
-        Initialise and begin a new game from the given configuration dict.
-
-        Expected keys: mode, sequence, first_player,
-                       p1_kind, p1_depth, p2_kind, p2_depth
-        """
         self._mode = config["mode"]
         self._game_over = False
         self._move_index = 0
@@ -189,7 +150,6 @@ class GameFrame(tk.Frame):
             p2_config=self._p2_config,
         )
 
-        # Update labels
         p1_name = "Human" if self._p1_config.kind == "human" else f"AI ({self._p1_config.kind})"
         p2_name = f"AI ({self._p2_config.kind}, d={self._p2_config.depth})"
         self._p1_label.config(text=f"Player 1  {p1_name}\n{self._state.p1_points} pts")
@@ -200,7 +160,6 @@ class GameFrame(tk.Frame):
         self._advance_game()
 
     def _advance_game(self):
-        """Called after every state transition. Decides what happens next."""
         if is_terminal(self._state):
             self._finish_game()
             return
@@ -214,11 +173,9 @@ class GameFrame(tk.Frame):
         else:
             self._set_buttons_enabled(False)
             self._set_status(f"AI ({cfg.kind}, depth={cfg.depth}) is thinking…")
-            # Schedule AI move after a brief delay so the UI updates first
             self.after(80, self._ai_move)
 
     def _human_move(self, move: str):
-        """Handle a human button click."""
         if self._game_over:
             return
         self._set_buttons_enabled(False)
@@ -226,7 +183,6 @@ class GameFrame(tk.Frame):
         self._advance_game()
 
     def _ai_move(self):
-        """Run the AI algorithm and apply its chosen move."""
         if self._game_over:
             return
         current = self._state.turn
@@ -245,7 +201,6 @@ class GameFrame(tk.Frame):
         self._advance_game()
 
     def _apply_and_record(self, move, algo, nodes_gen, nodes_eval, t):
-        """Apply move, record it, and refresh the UI."""
         player = self._state.turn
         value_taken = self._state.sequence[0] if move == MOVE_LEFT else self._state.sequence[-1]
 
@@ -268,7 +223,6 @@ class GameFrame(tk.Frame):
         self._game_record.moves.append(mr)
         self._move_index += 1
 
-        # Log entry
         who = f"P{player}"
         stats_str = ""
         if algo != "human":
@@ -279,7 +233,6 @@ class GameFrame(tk.Frame):
         self._refresh_ui()
 
     def _finish_game(self):
-        """Game over — display result and finalise record."""
         self._game_over = True
         self._set_buttons_enabled(False)
 
@@ -304,17 +257,12 @@ class GameFrame(tk.Frame):
         self._status_label.config(fg=colour)
         self._log(f"\n{'═'*50}\n{result_str}\n{'═'*50}")
 
-    # ── UI helpers ─────────────────────────────────────────────────────────────
-
     def _refresh_ui(self):
-        """Re-render the sequence tiles and update the scoreboard."""
-        # Clear old tiles
         for w in self._seq_frame.winfo_children():
             w.destroy()
 
         seq = self._state.sequence
         for i, val in enumerate(seq):
-            # Highlight the ends (left-most and right-most)
             if i == 0 or i == len(seq) - 1:
                 bg_col = BLUE if val == 1 else (YELLOW if val == 2 else RED)
                 border = 2
@@ -331,7 +279,6 @@ class GameFrame(tk.Frame):
             )
             tile.pack(side=tk.LEFT, padx=1, pady=2)
 
-        # Scoreboard
         self._p1_label.config(
             text=f"{self._p1_label.cget('text').split(chr(10))[0]}\n{self._state.p1_points} pts"
         )
@@ -343,7 +290,6 @@ class GameFrame(tk.Frame):
 
     def _set_buttons_enabled(self, enabled: bool):
         state = tk.NORMAL if enabled else tk.DISABLED
-        # Only show human buttons in human_vs_ai mode
         if self._mode == "human_vs_ai" and self._p1_config.kind == "human":
             self._left_btn.config(state=state)
             self._right_btn.config(state=state)
@@ -363,7 +309,6 @@ class GameFrame(tk.Frame):
         self._log_text.config(state=tk.DISABLED)
 
     def get_game_record(self) -> GameRecord:
-        """Return the GameRecord for the most recently completed game."""
         return self._game_record
 
     def _back(self):

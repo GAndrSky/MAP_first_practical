@@ -1,21 +1,3 @@
-"""
-experiments/logger.py
-=====================
-GameLogger — exports game records to CSV and JSON formats.
-
-CSV output (summary, one row per game):
-    game_id, initial_sequence, starting_player, p1_algo, p1_depth,
-    p2_algo, p2_depth, winner, final_p1_points, final_p2_points,
-    total_moves, total_time_s,
-    p1_nodes_generated, p1_nodes_evaluated, p1_total_time_s,
-    p2_nodes_generated, p2_nodes_evaluated, p2_total_time_s
-
-JSON output (detailed, one object per game with full move list):
-    All fields from GameRecord + per-move detail.
-
-No external dependencies — uses only stdlib json and csv.
-"""
-
 import csv
 import json
 import os
@@ -25,27 +7,8 @@ from experiments.runner import GameRecord, MoveStats
 
 
 class GameLogger:
-    """
-    Serialises a list of GameRecord objects to CSV and/or JSON.
-
-    Usage
-    -----
-    GameLogger.export_csv(records, "results/summary.csv")
-    GameLogger.export_json(records, "results/detail.json")
-    """
-
-    # ── CSV export ─────────────────────────────────────────────────────────────
-
     @staticmethod
     def export_csv(records: List[GameRecord], path: str) -> None:
-        """
-        Write a summary CSV: one row per game.
-
-        Parameters
-        ----------
-        records : list[GameRecord]
-        path    : str  — file path (created/overwritten)
-        """
         os.makedirs(os.path.dirname(path) if os.path.dirname(path) else ".", exist_ok=True)
 
         fieldnames = [
@@ -62,7 +25,6 @@ class GameLogger:
             writer.writeheader()
 
             for rec in records:
-                # Aggregate per-player stats from move records
                 p1_gen = p1_eval = p2_gen = p2_eval = 0
                 p1_time = p2_time = 0.0
 
@@ -97,18 +59,8 @@ class GameLogger:
                     "p2_total_time_s":    round(p2_time, 6),
                 })
 
-    # ── JSON export ────────────────────────────────────────────────────────────
-
     @staticmethod
     def export_json(records: List[GameRecord], path: str) -> None:
-        """
-        Write detailed JSON: one object per game, with full move list.
-
-        Parameters
-        ----------
-        records : list[GameRecord]
-        path    : str  — file path (created/overwritten)
-        """
         os.makedirs(os.path.dirname(path) if os.path.dirname(path) else ".", exist_ok=True)
 
         data = []

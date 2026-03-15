@@ -1,10 +1,3 @@
-"""
-Shared search core for Minimax and Alpha-Beta.
-
-This module keeps one recursive implementation and lets callers choose
-whether alpha-beta pruning is enabled.
-"""
-
 from __future__ import annotations
 
 import math
@@ -26,11 +19,7 @@ def search_value(
     beta: float,
     use_pruning: bool,
 ) -> float:
-    """
-    Return the backed-up value for a node using Minimax logic.
 
-    If `use_pruning` is True, alpha-beta cutoffs are applied.
-    """
     state = node.state
 
     if is_terminal(state):
@@ -96,7 +85,6 @@ def get_best_move(
     stats: "MoveStats",
     use_pruning: bool,
 ) -> Tuple[str, float]:
-    """Run search from root and return (best_move, best_value)."""
     assert depth >= 1, "Search depth must be at least 1."
     assert state.turn == player_id, "Search called when it is not player_id's turn."
     assert not is_terminal(state), "Cannot search from a terminal state."
